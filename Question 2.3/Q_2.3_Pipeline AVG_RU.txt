@@ -1,0 +1,126 @@
+[
+  {
+    $project:
+      /**
+       * specifications: The fields to
+       *   include or exclude.
+       */
+      {
+        video_id: 1,
+        title: 1,
+        publishedAt: 1,
+        trending_date: 1,
+        channelTitle: 1,
+        tags: {
+          $split: ["$tags", "|"],
+        },
+        view_count: 1,
+      },
+  },
+  {
+    $sort:
+      /**
+       * Provide any number of field/order pairs.
+       */
+      {
+        publishedAt: 1,
+        trending_date: -1,
+      },
+  },
+  {
+    $group:
+      /**
+       * _id: The id of the group.
+       * fieldN: The first field name.
+       */
+      {
+        _id: "$video_id",
+        title: {
+          $first: "$title",
+        },
+        publishedAt: {
+          $first: "$publishedAt",
+        },
+        channelTitle: {
+          $first: "$channelTitle",
+        },
+        trending_date: {
+          $first: "$trending_date",
+        },
+        view_count: {
+          $first: "$view_count",
+        },
+        tags: {
+          $first: "$tags",
+        },
+      },
+  },
+  {
+    $group:
+      /**
+       * _id: The id of the group.
+       * fieldN: The first field name.
+       */
+      {
+        _id: null,
+        view_count: {
+          $sum: {
+            $toInt: "$view_count",
+          },
+        },
+        tags: {
+          $addToSet: "$tags",
+        },
+      },
+  },
+  {
+    $unwind: {
+      path: "$tags",
+    },
+  },
+  {
+    $unwind: {
+      path: "$tags",
+    },
+  },
+  {
+    $group:
+      /**
+       * _id: The id of the group.
+       * fieldN: The first field name.
+       */
+      {
+        _id: null,
+        tags_sum: {
+          $sum: 1,
+        },
+        view_count_sum: {
+          $first: "$view_count",
+        },
+      },
+  },
+  {
+    $project:
+      /**
+       * specifications: The fields to
+       *   include or exclude.
+       */
+      {
+        countryCode: "RU",
+        avg_tags: {
+          $divide: ["$tags_sum", 99294],
+        },
+        avg_views: {
+          $divide: ["$view_count_sum", 99294],
+        },
+      },
+  },
+  {
+    $unset: "_id",
+  },
+  {
+    $merge: {
+      into: "Question2.3",
+    },
+  },
+]

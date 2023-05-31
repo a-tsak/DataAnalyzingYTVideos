@@ -1,0 +1,148 @@
+[
+  {
+    $match:
+      /**
+       * query: The query in MQL.
+       */
+      {
+        comments_disabled: "True",
+      },
+  },
+  {
+    $sort:
+      /**
+       * Provide any number of field/order pairs.
+       */
+      {
+        publishedAt: 1,
+        trending_date: -1,
+      },
+  },
+  {
+    $project:
+      /**
+       * specifications: The fields to
+       *   include or exclude.
+       */
+      {
+        title: 1,
+        video_id: 1,
+        likes: 1,
+        dislikes: 1,
+        view_count: 1,
+        comments_disabled: 1,
+      },
+  },
+  {
+    $group: {
+      _id: "$video_id",
+      title: {
+        $first: "$title",
+      },
+      view_count: {
+        $first: "$view_count",
+      },
+      likes: {
+        $first: "$likes",
+      },
+      dislikes: {
+        $first: "$dislikes",
+      },
+    },
+  },
+  {
+    $sort:
+      /**
+       * Provide any number of field/order pairs.
+       */
+      {
+        publishedAt: 1,
+        trending_date: -1,
+      },
+  },
+  {
+    $group:
+      /**
+       * _id: The id of the group.
+       * fieldN: The first field name.
+       */
+      {
+        _id: null,
+        view_count_sum: {
+          $sum: {
+            $toInt: "$view_count",
+          },
+        },
+        likes_sum: {
+          $sum: {
+            $toInt: "$likes",
+          },
+        },
+        dislikes_sum: {
+          $sum: {
+            $toInt: "$dislikes",
+          },
+        },
+      },
+  },
+  {
+    $project:
+      /**
+       * specifications: The fields to
+       *   include or exclude.
+       */
+      {
+        countryCode: "GB",
+        commentsDisabled: "TRUE",
+        avg_views: {
+          $round: [
+            {
+              $divide: ["$view_count_sum", 741],
+            },
+            2,
+          ],
+        },
+        avg_likes: {
+          $round: [
+            {
+              $divide: ["$likes_sum", 741],
+            },
+            2,
+          ],
+        },
+        avg_dislikes: {
+          $round: [
+            {
+              $divide: ["$dislikes_sum", 741],
+            },
+            2,
+          ],
+        },
+      },
+  },
+  {
+    $unset:
+      /**
+       *
+       * Provide the field name to exclude.
+       * To exclude multiple fields, pass the field names in an array.
+       */
+      "_id",
+  },
+  {
+    $merge:
+      /**
+       * into: The target collection.
+       * on: Fields to  identify.
+       * let: Defined variables.
+       * whenMatched: Action for matching docs.
+       * whenNotMatched: Action for non-matching docs.
+       */
+      {
+        into: "Average_Results",
+        //let: 'specification(s)',
+        //whenMatched: 'string',
+        //whenNotMatched: 'string'
+      },
+  },
+]

@@ -1,0 +1,61 @@
+[
+  {
+    $match: {
+      channelTitle: "Saturday Night Live",
+    },
+  },
+  {
+    $project: {
+      title: 1,
+      video_id: 1,
+      publishedAt: 1,
+      channelTitle: 1,
+      likes: 1,
+      dislikes: 1,
+      view_count: 1,
+      trending_date: 1,
+    },
+  },
+  {
+    $sort: {
+      publishedAt: 1,
+      trending_date: -1,
+    },
+  },
+  {
+    $group: {
+      _id: "$video_id",
+      publishedAt: {
+        $first: {
+          $substr: ["$publishedAt", 0, 10],
+        },
+      },
+      title: {
+        $first: "$title",
+      },
+      trending_date: {
+        $first: "$trending_date",
+      },
+      channelTitle: {
+        $first: "$channelTitle",
+      },
+      likes: {
+        $first: "$likes",
+      },
+      dislikes: {
+        $first: "$dislikes",
+      },
+      view_count: {
+        $first: "$view_count",
+      },
+    },
+  },
+  {
+    $sort: {
+      publishedAt: 1,
+    },
+  },
+  {
+    $unset: ["trending_date", "_id"],
+  },
+]

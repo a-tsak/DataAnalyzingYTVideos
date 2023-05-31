@@ -1,0 +1,53 @@
+[
+  {
+    $match:
+      /**
+       * query: The query in MQL.
+       */
+      {
+        comments_disabled: "False",
+      },
+  },
+  {
+    $sort:
+      /**
+       * Provide any number of field/order pairs.
+       */
+      {
+        publishedAt: 1,
+        trending_date: -1,
+      },
+  },
+  {
+    $project:
+      /**
+       * specifications: The fields to
+       *   include or exclude.
+       */
+      {
+        title: 1,
+        video_id: 1,
+        likes: 1,
+        dislikes: 1,
+        view_count: 1,
+        comments_disabled: 1,
+      },
+  },
+  {
+    $group: {
+      _id: "$video_id",
+      title: {
+        $first: "$title",
+      },
+      view_count: {
+        $first: "$view_count",
+      },
+      likes: {
+        $first: "$likes",
+      },
+      dislikes: {
+        $first: "$dislikes",
+      },
+    },
+  },
+]

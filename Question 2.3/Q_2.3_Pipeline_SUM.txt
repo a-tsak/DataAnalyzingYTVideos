@@ -1,0 +1,39 @@
+[
+  {
+    $group:
+      /**
+       * _id: The id of the group.
+       * fieldN: The first field name.
+       */
+      {
+        _id: "$video_id",
+      },
+  },
+  {
+    $group:
+      {
+        _id: null,
+        count: {
+          $sum: 1,
+        },
+      },
+  },
+  {
+    $project:
+      /**
+       * specifications: The fields to
+       *   include or exclude.
+       */
+      {
+        _id: "CA",    /*ΤΟ ΑΛΛΑΖΟΥΜΕ ΑΝΑΓΟΓΑ ΤΗΝ ΠΕΡΙΟΧΗ*/
+        count: 1,
+      },
+  },
+  {
+    $merge:
+      
+      {
+        into: "sum",
+      },
+  },
+]

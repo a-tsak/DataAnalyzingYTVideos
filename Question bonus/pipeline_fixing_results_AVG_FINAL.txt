@@ -1,0 +1,128 @@
+[
+  {
+    $group:
+      /**
+       * _id: The id of the group.
+       * fieldN: The first field name.
+       */
+      {
+        _id: "$Category",
+        INs: {
+          $sum: "$INs",
+        },
+        JPs: {
+          $sum: "$JPs",
+        },
+        KRs: {
+          $sum: "$KRs",
+        },
+        RUs: {
+          $sum: "$RUs",
+        },
+        INv: {
+          $sum: "$INv",
+        },
+        JPv: {
+          $sum: "$JPv",
+        },
+        KRv: {
+          $sum: "$KRv",
+        },
+        RUv: {
+          $sum: "$RUv",
+        },
+      },
+  },
+  {
+    $project:
+      /**
+       * specifications: The fields to
+       *   include or exclude.
+       */
+      {
+        _id: 1,
+        INavg: {
+          $round: [
+            {
+              $divide: [
+                "$INv",
+                {
+                  $add: [
+                    "$INs",
+                    "$JPs",
+                    "$KRs",
+                    "$RUs",
+                  ],
+                },
+              ],
+            },
+            2,
+          ],
+        },
+        JPavg: {
+          $round: [
+            {
+              $divide: [
+                "$JPv",
+                {
+                  $add: [
+                    "$INs",
+                    "$JPs",
+                    "$KRs",
+                    "$RUs",
+                  ],
+                },
+              ],
+            },
+            2,
+          ],
+        },
+        KRavg: {
+          $round: [
+            {
+              $divide: [
+                "$KRv",
+                {
+                  $add: [
+                    "$INs",
+                    "$JPs",
+                    "$KRs",
+                    "$RUs",
+                  ],
+                },
+              ],
+            },
+            2,
+          ],
+        },
+        RUavg: {
+          $round: [
+            {
+              $divide: [
+                "$RUv",
+                {
+                  $add: [
+                    "$INs",
+                    "$JPs",
+                    "$KRs",
+                    "$RUs",
+                  ],
+                },
+              ],
+            },
+            2,
+          ],
+        },
+      },
+  },
+  {
+    $sort:
+      /**
+       * Provide any number of field/order pairs.
+       */
+
+      {
+        _id: 1,
+      },
+  },
+]

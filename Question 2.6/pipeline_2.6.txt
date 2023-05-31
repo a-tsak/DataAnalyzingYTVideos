@@ -1,0 +1,86 @@
+[
+  {
+    $sort:
+      /**
+       * Provide any number of field/order pairs.
+       */
+      {
+        publishedAt: -1,
+      },
+  },
+  {
+    $group: {
+      _id: "$video_id",
+      publishedAt: {
+        $first: "$publishedAt",
+      },
+    },
+  },
+  {
+    $addFields: {
+      year: {
+        $substr: ["$publishedAt", 0, 4],
+      },
+      month: {
+        $substr: ["$publishedAt", 5, 2],
+      },
+      day: {
+        $substr: ["$publishedAt", 8, 2],
+      },
+      date: {
+        $substr: ["$publishedAt", 0, 10],
+      },
+    },
+  },
+  {
+    $match: {
+      $or: [
+        {
+          month: {
+            $in: ["09", "10", "11", "12"],
+          },
+          year: "2022",
+        },
+        {
+          month: {
+            $in: ["01"],
+          },
+          year: "2023",
+        },
+      ],
+    },
+  },
+  {
+    $sort: {
+      publishedAt: 1,
+    },
+  },
+  {
+    $group: {
+      _id: "$date",
+      count: {
+        $sum: 1,
+      },
+      date: {
+        $first: "$date",
+      },
+    },
+  },
+  {
+    $unset:
+      /**
+       * Provide the field name to exclude.
+       * To exclude multiple fields, pass the field names in an array.
+       */
+      "_id",
+  },
+  {
+    $sort:
+      /**
+       * Provide any number of field/order pairs.
+       */
+      {
+        date: 1,
+      },
+  },
+]

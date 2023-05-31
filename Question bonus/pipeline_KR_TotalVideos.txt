@@ -1,0 +1,147 @@
+[
+  {
+    $sort:
+      /**
+       * Provide any number of field/order pairs.
+       */
+      {
+        title: 1,
+        trending_date: -1,
+      },
+  },
+  {
+    $group:
+      /**
+       * _id: The id of the group.
+       * fieldN: The first field name.
+       */
+      {
+        _id: "$video_id",
+        video_id: {
+          $first: "$video_id",
+        },
+        title: {
+          $first: "$title",
+        },
+        categoryId: {
+          $first: "$categoryId",
+        },
+        view_count: {
+          $first: "$view_count",
+        },
+      },
+  },
+  {
+    $lookup: {
+      from: "C_KR",
+      let: {
+        cid: {
+          $toString: "$categoryId",
+        },
+      },
+      pipeline: [
+        {
+          $unwind: {
+            path: "$items",
+          },
+        },
+        {
+          $match: {
+            $expr: {
+              $eq: ["$items.id", "$$cid"],
+            },
+          },
+        },
+        {
+          $project: {
+            "items.id": 1,
+            "items.snippet.title": 1,
+          },
+        },
+      ],
+      as: "categoryTitle",
+    },
+  },
+  {
+    $unwind:
+      /**
+       * path: Path to the array field.
+       * includeArrayIndex: Optional name for index.
+       * preserveNullAndEmptyArrays: Optional
+       *   toggle to unwind null and empty values.
+       */
+      {
+        path: "$categoryTitle",
+      },
+  },
+  {
+    $project:
+      /**
+       * specifications: The fields to
+       *   include or exclude.
+       */
+      {
+        _id: 1,
+        video_id: 1,
+        title: 1,
+        categoryId: 1,
+        view_count: 1,
+        categoryTitle:
+          "$categoryTitle.items.snippet.title",
+      },
+  },
+  {
+    $group:
+      /**
+       * _id: The id of the group.
+       * fieldN: The first field name.
+       */
+      {
+        _id: "$categoryTitle",
+        sum: {
+          $sum: 1,
+        },
+      },
+  },
+  {
+    $project:
+      /**
+       * specifications: The fields to
+       *   include or exclude.
+       */
+      {
+        Category: "$_id",
+        KR: "$sum",
+        JP: {
+          $toInt: "0",
+        },
+        IN: {
+          $toInt: "0",
+        },
+        RU: {
+          $toInt: "0",
+        },
+      },
+  },
+  {
+    $unset:
+      /**
+       * Provide the field name to exclude.
+       * To exclude multiple fields, pass the field names in an array.
+       */
+      "_id",
+  },
+  {
+    $merge:
+      /**
+       * into: The target collection.
+       * on: Fields to  identify.
+       * let: Defined variables.
+       * whenMatched: Action for matching docs.
+       * whenNotMatched: Action for non-matching docs.
+       */
+      {
+        into: "bonus",
+      },
+  },
+]
